@@ -1,13 +1,16 @@
-import axios from 'axios';
 import { useRef, useState } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+
+import { useFetchClient } from '@strapi/helper-plugin';
+import axios from 'axios';
 import { useIntl } from 'react-intl';
-import { axiosInstance, getTrad } from '../utils';
+import { useMutation, useQueryClient } from 'react-query';
+
 import pluginId from '../pluginId';
+import { getTrad } from '../utils';
 
 const endpoint = `/${pluginId}`;
 
-const uploadAsset = (asset, cancelToken, onProgress) => {
+const uploadAsset = (asset, folderId, cancelToken, onProgress, post) => {
   const { rawFile, caption, name, alternativeText } = asset;
   const formData = new FormData();
 
@@ -17,21 +20,21 @@ const uploadAsset = (asset, cancelToken, onProgress) => {
     'fileInfo',
     JSON.stringify({
       name,
-      caption: caption || name,
-      alternativeText: alternativeText || name,
+      caption,
+      alternativeText,
+      folder: folderId,
     })
   );
 
-  return axiosInstance({
-    method: 'post',
-    url: endpoint,
-    headers: {},
-    data: formData,
+  return post(endpoint, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
     cancelToken: cancelToken.token,
     onUploadProgress({ total, loaded }) {
       onProgress((loaded / total) * 100);
     },
-  }).then(res => res.data);
+  }).then((res) => res.data);
 };
 
 export const useUpload = () => {
@@ -39,15 +42,22 @@ export const useUpload = () => {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const tokenRef = useRef(axios.CancelToken.source());
+  const { post } = useFetchClient();
 
-  const mutation = useMutation(asset => uploadAsset(asset, tokenRef.current, setProgress), {
-    onSuccess: () => {
-      queryClient.refetchQueries(['assets'], { active: true });
-      queryClient.refetchQueries(['asset-count'], { active: true });
+  const mutation = useMutation(
+    ({ asset, folderId }) => {
+      return uploadAsset(asset, folderId, tokenRef.current, setProgress, post);
     },
-  });
+    {
+      onSuccess() {
+        queryClient.refetchQueries([pluginId, 'assets'], { active: true });
+        queryClient.refetchQueries([pluginId, 'asset-count'], { active: true });
+      },
+    }
+  );
 
-  const upload = asset => mutation.mutateAsync(asset);
+  const upload = (asset, folderId) => mutation.mutateAsync({ asset, folderId });
+
   const cancel = () =>
     tokenRef.current.cancel(
       formatMessage({ id: getTrad('modal.upload.cancelled'), defaultMessage: '' })

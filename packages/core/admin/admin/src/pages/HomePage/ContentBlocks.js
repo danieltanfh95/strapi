@@ -1,12 +1,12 @@
 import React from 'react';
-import styled from 'styled-components';
-import { useIntl } from 'react-intl';
+
+import { Flex } from '@strapi/design-system';
 import { ContentBox, useTracking } from '@strapi/helper-plugin';
-import { Stack } from '@strapi/design-system/Stack';
-import InformationSquare from '@strapi/icons/InformationSquare';
-import CodeSquare from '@strapi/icons/CodeSquare';
-import PlaySquare from '@strapi/icons/PlaySquare';
-import FeatherSquare from '@strapi/icons/FeatherSquare';
+import { CodeSquare, FeatherSquare, InformationSquare, PlaySquare } from '@strapi/icons';
+import { useIntl } from 'react-intl';
+import styled from 'styled-components';
+
+import CloudBox from './CloudBox';
 
 const BlockLink = styled.a`
   text-decoration: none;
@@ -16,12 +16,13 @@ const ContentBlocks = () => {
   const { formatMessage } = useIntl();
   const { trackUsage } = useTracking();
 
-  const handleClick = eventName => {
+  const handleClick = (eventName) => {
     trackUsage(eventName);
   };
 
   return (
-    <Stack spacing={5}>
+    <Flex direction="column" alignItems="stretch" gap={5}>
+      <CloudBox />
       <BlockLink
         href="https://strapi.io/resource-center"
         target="_blank"
@@ -98,7 +99,7 @@ const ContentBlocks = () => {
           iconBackground="alternative100"
         />
       </BlockLink>
-    </Stack>
+    </Flex>
   );
 };
 

@@ -1,8 +1,9 @@
 import React from 'react';
+
+import { MultiSelectNested } from '@strapi/design-system';
+import upperFirst from 'lodash/upperFirst';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
-import { MultiSelectNested } from '@strapi/design-system/Select';
-import upperFirst from 'lodash/upperFirst';
 
 const options = [
   {
@@ -25,7 +26,7 @@ const AllowedTypesSelect = ({ intlLabel, name, onChange, value }) => {
       ? formatMessage({ id: 'global.none', defaultMessage: 'None' })
       : [...value]
           .sort()
-          .map(v => upperFirst(v))
+          .map((v) => upperFirst(v))
           .join(', ');
 
   /* eslint-enable indent */
@@ -39,7 +40,7 @@ const AllowedTypesSelect = ({ intlLabel, name, onChange, value }) => {
       id="select1"
       label={label}
       customizeContent={() => displayedValue}
-      onChange={values => {
+      onChange={(values) => {
         if (values.length > 0) {
           onChange({ target: { name, value: values, type: 'allowed-types-select' } });
         } else {

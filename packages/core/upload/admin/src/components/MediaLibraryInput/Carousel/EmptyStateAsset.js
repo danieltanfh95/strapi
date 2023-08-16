@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+
+import { Flex, Icon, Typography } from '@strapi/design-system';
+import { PicturePlus } from '@strapi/icons';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import { Icon } from '@strapi/design-system/Icon';
-import { Flex } from '@strapi/design-system/Flex';
-import { Typography } from '@strapi/design-system/Typography';
-import PicturePlusIcon from '@strapi/icons/PicturePlus';
+import styled from 'styled-components';
+
+import { AssetSource } from '../../../constants';
 import getTrad from '../../../utils/getTrad';
 import { rawFileToAsset } from '../../../utils/rawFileToAsset';
-import { AssetSource } from '../../../constants';
 
 const TextAlignTypography = styled(Typography)`
   align-items: center;
@@ -18,22 +18,22 @@ export const EmptyStateAsset = ({ disabled, onClick, onDropAsset }) => {
   const { formatMessage } = useIntl();
   const [dragOver, setDragOver] = useState(false);
 
-  const handleDragEnter = e => {
+  const handleDragEnter = (e) => {
     e.preventDefault();
     setDragOver(true);
   };
 
-  const handleDragLeave = e => {
+  const handleDragLeave = (e) => {
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setDragOver(false);
     }
   };
 
-  const handleDragOver = e => {
+  const handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  const handleDrop = e => {
+  const handleDrop = (e) => {
     e.preventDefault();
 
     if (e?.dataTransfer?.files) {
@@ -74,7 +74,7 @@ export const EmptyStateAsset = ({ disabled, onClick, onDropAsset }) => {
       style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
     >
       <Icon
-        as={PicturePlusIcon}
+        as={PicturePlus}
         aria-hidden
         width="30px"
         height="24px"

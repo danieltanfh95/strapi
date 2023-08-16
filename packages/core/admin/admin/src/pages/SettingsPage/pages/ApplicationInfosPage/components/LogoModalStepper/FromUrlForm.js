@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
+
+import { Box, Button, ModalFooter, TextInput } from '@strapi/design-system';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
-import { Box } from '@strapi/design-system/Box';
-import { Button } from '@strapi/design-system/Button';
-import { TextInput } from '@strapi/design-system/TextInput';
-import { ModalFooter } from '@strapi/design-system/ModalLayout';
-import urlToFile from '../../utils/urlToFile';
+
+import { DIMENSION, SIZE } from '../../utils/constants';
 import { parseFileMetadatas } from '../../utils/parseFileMetadatas';
-import { SIZE, DIMENSION } from '../../utils/constants';
+import urlToFile from '../../utils/urlToFile';
 
 const FromUrlForm = ({ goTo, next, onClose, setLocalImage }) => {
   const { formatMessage } = useIntl();
   const [logoUrl, setLogoUrl] = useState('');
   const [error, setError] = useState(null);
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setLogoUrl(e.target.value);
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
       const file = await urlToFile(logoUrl);
       const asset = await parseFileMetadatas(file);
@@ -36,7 +34,12 @@ const FromUrlForm = ({ goTo, next, onClose, setLocalImage }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+    >
       <Box paddingLeft={8} paddingRight={8} paddingTop={6} paddingBottom={6}>
         <TextInput
           label={formatMessage({

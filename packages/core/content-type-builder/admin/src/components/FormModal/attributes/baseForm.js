@@ -2,10 +2,11 @@
 // import { FormattedMessage } from 'react-intl';
 import getTrad from '../../../utils/getTrad';
 import { componentField, componentForm } from '../component';
+
 import { nameField } from './nameField';
 
 const baseForm = {
-  component: (data, step) => {
+  component(data, step) {
     if (step === '1') {
       const itemsToConcat =
         data.createComponent === true ? componentForm.base('componentToCreate.') : [];
@@ -75,7 +76,7 @@ const baseForm = {
       ],
     };
   },
-  date: () => {
+  date() {
     return {
       sections: [
         {
@@ -140,7 +141,7 @@ const baseForm = {
       ],
     };
   },
-  enumeration: () => {
+  enumeration() {
     return {
       sections: [
         { sectionTitle: null, items: [nameField] },
@@ -168,7 +169,7 @@ const baseForm = {
       ],
     };
   },
-  media: () => {
+  media() {
     return {
       sections: [
         { sectionTitle: null, items: [nameField] },
@@ -213,7 +214,7 @@ const baseForm = {
       ],
     };
   },
-  number: () => {
+  number() {
     return {
       sections: [
         {
@@ -286,7 +287,7 @@ const baseForm = {
       ],
     };
   },
-  relation: () => {
+  relation() {
     return {
       sections: [
         {
@@ -303,7 +304,7 @@ const baseForm = {
       ],
     };
   },
-  string: () => {
+  string() {
     return {
       sections: [
         { sectionTitle: null, items: [nameField] },
@@ -349,7 +350,7 @@ const baseForm = {
       ],
     };
   },
-  text: () => {
+  text() {
     return {
       sections: [
         { sectionTitle: null, items: [nameField] },
@@ -395,7 +396,7 @@ const baseForm = {
       ],
     };
   },
-  uid: (data, step, attributes) => {
+  uid(data, step, attributes) {
     const options = attributes
       .filter(({ type }) => ['string', 'text'].includes(type))
       .map(({ name }) => ({
@@ -415,7 +416,7 @@ const baseForm = {
               ...nameField,
               placeholder: {
                 id: getTrad('modalForm.attribute.form.base.name.placeholder'),
-                defaultMessage: 'e.g. Slug, SEO URL, Canonical URL',
+                defaultMessage: 'e.g. slug, seoUrl, canonicalUrl',
               },
             },
             {

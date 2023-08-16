@@ -1,12 +1,13 @@
-const action = require('../index');
+'use strict';
 
 jest.mock('@actions/github');
 jest.mock('@actions/core');
 
 const github = require('@actions/github');
 const core = require('@actions/core');
+const action = require('../index');
 
-test.each(action.BLOCKING_LABELS)('Test blocking labels %s', async label => {
+test.each(action.BLOCKING_LABELS)('Test blocking labels %s', async (label) => {
   github.context = {
     payload: {
       pull_request: {

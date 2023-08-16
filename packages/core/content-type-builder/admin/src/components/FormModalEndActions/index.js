@@ -5,10 +5,12 @@
  */
 
 import React from 'react';
-import { useIntl } from 'react-intl';
+
+import { Button } from '@strapi/design-system';
+import { Plus } from '@strapi/icons';
 import PropTypes from 'prop-types';
-import { Button } from '@strapi/design-system/Button';
-import Plus from '@strapi/icons/Plus';
+import { useIntl } from 'react-intl';
+
 import { getTrad } from '../../utils';
 
 const FormModalEndActions = ({
@@ -17,6 +19,7 @@ const FormModalEndActions = ({
   deleteComponent,
   deleteContentType,
   isAttributeModal,
+  isCustomFieldModal,
   isComponentAttribute,
   isComponentToDzModal,
   isContentTypeModal,
@@ -40,7 +43,9 @@ const FormModalEndActions = ({
   onSubmitEditCategory,
   onSubmitEditComponent,
   onSubmitEditContentType,
+  onSubmitEditCustomFieldAttribute,
   onSubmitEditDz,
+  onClickFinish,
 }) => {
   const { formatMessage } = useIntl();
 
@@ -50,7 +55,7 @@ const FormModalEndActions = ({
         <Button
           variant="secondary"
           type="submit"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitAddComponentToDz(e, true);
@@ -69,7 +74,7 @@ const FormModalEndActions = ({
       <Button
         variant="default"
         type="submit"
-        onClick={e => {
+        onClick={(e) => {
           e.preventDefault();
 
           onSubmitAddComponentToDz(e, false);
@@ -88,9 +93,10 @@ const FormModalEndActions = ({
       <Button
         variant="default"
         type="submit"
-        onClick={e => {
+        onClick={(e) => {
           e.preventDefault();
 
+          onClickFinish();
           onSubmitEditDz(e, false);
         }}
       >
@@ -108,7 +114,7 @@ const FormModalEndActions = ({
         <Button
           variant="secondary"
           type="submit"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitCreateDz(e, true);
@@ -145,7 +151,7 @@ const FormModalEndActions = ({
         <Button
           variant="secondary"
           type="submit"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitAddComponentAttribute(e, true);
@@ -169,7 +175,7 @@ const FormModalEndActions = ({
         <Button
           variant="secondary"
           type="submit"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitAddComponentAttribute(e, true);
@@ -189,9 +195,10 @@ const FormModalEndActions = ({
         <Button
           variant="default"
           type="button"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
+            onClickFinish();
             onSubmitAddComponentAttribute(e, false);
           }}
         >
@@ -210,7 +217,7 @@ const FormModalEndActions = ({
         <Button
           type={isEditingAttribute ? 'button' : 'submit'}
           variant="secondary"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitEditAttribute(e, true);
@@ -225,9 +232,10 @@ const FormModalEndActions = ({
         <Button
           type={isEditingAttribute ? 'submit' : 'button'}
           variant="default"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
+            onClickFinish();
             onSubmitEditAttribute(e, false);
           }}
         >
@@ -248,7 +256,7 @@ const FormModalEndActions = ({
             <Button
               type="button"
               variant="danger"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
                 deleteContentType();
               }}
@@ -261,7 +269,7 @@ const FormModalEndActions = ({
             <Button
               type="submit"
               variant="default"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
 
                 onSubmitEditContentType(e, false);
@@ -278,7 +286,7 @@ const FormModalEndActions = ({
           <Button
             type="submit"
             variant="secondary"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
 
               onSubmitCreateContentType(e, true);
@@ -302,7 +310,7 @@ const FormModalEndActions = ({
             <Button
               type="button"
               variant="danger"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
                 deleteComponent();
               }}
@@ -315,7 +323,7 @@ const FormModalEndActions = ({
             <Button
               type="submit"
               variant="default"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
 
                 onSubmitEditComponent(e, false);
@@ -332,7 +340,7 @@ const FormModalEndActions = ({
           <Button
             type="submit"
             variant="secondary"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
 
               onSubmitCreateComponent(e, true);
@@ -354,7 +362,7 @@ const FormModalEndActions = ({
         <Button
           type="button"
           variant="danger"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             deleteCategory(categoryName);
@@ -368,7 +376,7 @@ const FormModalEndActions = ({
         <Button
           type="submit"
           variant="default"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
 
             onSubmitEditCategory(e);
@@ -383,11 +391,49 @@ const FormModalEndActions = ({
     );
   }
 
+  if (isCustomFieldModal) {
+    return (
+      <>
+        <Button
+          type={isEditingAttribute ? 'button' : 'submit'}
+          variant="secondary"
+          onClick={(e) => {
+            e.preventDefault();
+
+            onSubmitEditCustomFieldAttribute(e, true);
+          }}
+          startIcon={<Plus />}
+        >
+          {formatMessage({
+            id: getTrad('form.button.add-field'),
+            defaultMessage: 'Add another field',
+          })}
+        </Button>
+        <Button
+          type={isEditingAttribute ? 'submit' : 'button'}
+          variant="default"
+          onClick={(e) => {
+            e.preventDefault();
+
+            onClickFinish();
+            onSubmitEditCustomFieldAttribute(e, false);
+          }}
+        >
+          {formatMessage({
+            id: 'global.finish',
+            defaultMessage: 'Finish',
+          })}
+        </Button>
+      </>
+    );
+  }
+
   return null;
 };
 
 FormModalEndActions.defaultProps = {
   categoryName: null,
+  onClickFinish() {},
 };
 
 FormModalEndActions.propTypes = {
@@ -396,6 +442,7 @@ FormModalEndActions.propTypes = {
   deleteComponent: PropTypes.func.isRequired,
   deleteContentType: PropTypes.func.isRequired,
   isAttributeModal: PropTypes.bool.isRequired,
+  isCustomFieldModal: PropTypes.bool.isRequired,
   isComponentAttribute: PropTypes.bool.isRequired,
   isComponentModal: PropTypes.bool.isRequired,
   isComponentToDzModal: PropTypes.bool.isRequired,
@@ -419,7 +466,9 @@ FormModalEndActions.propTypes = {
   onSubmitEditCategory: PropTypes.func.isRequired,
   onSubmitEditComponent: PropTypes.func.isRequired,
   onSubmitEditContentType: PropTypes.func.isRequired,
+  onSubmitEditCustomFieldAttribute: PropTypes.func.isRequired,
   onSubmitEditDz: PropTypes.func.isRequired,
+  onClickFinish: PropTypes.func,
 };
 
 export default FormModalEndActions;

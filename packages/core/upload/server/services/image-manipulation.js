@@ -1,4 +1,5 @@
 'use strict';
+
 /**
  * Image manipulation functions
  */
@@ -6,31 +7,33 @@ const fs = require('fs');
 const { join } = require('path');
 const sharp = require('sharp');
 
+const {
+  file: { bytesToKbytes, writableDiscardStream },
+} = require('@strapi/utils');
 const { getService } = require('../utils');
-const { bytesToKbytes } = require('../utils/file');
 
-const FORMATS_TO_PROCESS = ['jpeg', 'png', 'webp', 'tiff', 'svg', 'gif'];
-const FORMATS_TO_OPTIMIZE = ['jpeg', 'png', 'webp', 'tiff'];
+const FORMATS_TO_RESIZE = ['jpeg', 'png', 'webp', 'tiff', 'gif'];
+const FORMATS_TO_PROCESS = ['jpeg', 'png', 'webp', 'tiff', 'svg', 'gif', 'avif'];
+const FORMATS_TO_OPTIMIZE = ['jpeg', 'png', 'webp', 'tiff', 'avif'];
 
 const writeStreamToFile = (stream, path) =>
   new Promise((resolve, reject) => {
     const writeStream = fs.createWriteStream(path);
+    // Reject promise if there is an error with the provided stream
+    stream.on('error', reject);
     stream.pipe(writeStream);
     writeStream.on('close', resolve);
     writeStream.on('error', reject);
   });
 
-const getMetadata = file =>
+const getMetadata = (file) =>
   new Promise((resolve, reject) => {
     const pipeline = sharp();
-    pipeline
-      .metadata()
-      .then(resolve)
-      .catch(reject);
+    pipeline.metadata().then(resolve).catch(reject);
     file.getStream().pipe(pipeline);
   });
 
-const getDimensions = async file => {
+const getDimensions = async (file) => {
   const { width = null, height = null } = await getMetadata(file);
   return { width, height };
 };
@@ -43,8 +46,8 @@ const THUMBNAIL_RESIZE_OPTIONS = {
 
 const resizeFileTo = async (file, options, { name, hash }) => {
   const filePath = join(file.tmpWorkingDirectory, hash);
-  await writeStreamToFile(file.getStream().pipe(sharp().resize(options)), filePath);
 
+  await writeStreamToFile(file.getStream().pipe(sharp().resize(options)), filePath);
   const newFile = {
     name,
     hash,
@@ -60,7 +63,7 @@ const resizeFileTo = async (file, options, { name, hash }) => {
   return newFile;
 };
 
-const generateThumbnail = async file => {
+const generateThumbnail = async (file) => {
   if (
     file.width > THUMBNAIL_RESIZE_OPTIONS.width ||
     file.height > THUMBNAIL_RESIZE_OPTIONS.height
@@ -75,7 +78,13 @@ const generateThumbnail = async file => {
   return null;
 };
 
-const optimize = async file => {
+/**
+ * Optimize image by:
+ *    - auto orienting image based on EXIF data
+ *    - reduce image quality
+ *
+ */
+const optimize = async (file) => {
   const { sizeOptimization = false, autoOrientation = false } = await getService(
     'upload'
   ).getSettings();
@@ -86,13 +95,16 @@ const optimize = async file => {
 
   if (sizeOptimization || autoOrientation) {
     const transformer = sharp();
+    // reduce image quality
     transformer[format]({ quality: sizeOptimization ? 80 : 100 });
+    // rotate image based on EXIF data
     if (autoOrientation) {
       transformer.rotate();
     }
-
     const filePath = join(file.tmpWorkingDirectory, `optimized-${file.hash}`);
+
     await writeStreamToFile(file.getStream().pipe(transformer), filePath);
+
     newFile.getStream = () => fs.createReadStream(filePath);
   }
 
@@ -100,7 +112,7 @@ const optimize = async file => {
 
   if (newSize > size) {
     // Ignore optimization if output is bigger than original
-    return Object.assign({}, file, { width, height, size: bytesToKbytes(size) });
+    return { ...file, width, height, size: bytesToKbytes(size) };
   }
 
   return Object.assign(newFile, {
@@ -118,7 +130,7 @@ const DEFAULT_BREAKPOINTS = {
 
 const getBreakpoints = () => strapi.config.get('plugin.upload.breakpoints', DEFAULT_BREAKPOINTS);
 
-const generateResponsiveFormats = async file => {
+const generateResponsiveFormats = async (file) => {
   const { responsiveDimensions = false } = await getService('upload').getSettings();
 
   if (!responsiveDimensions) return [];
@@ -127,12 +139,14 @@ const generateResponsiveFormats = async file => {
 
   const breakpoints = getBreakpoints();
   return Promise.all(
-    Object.keys(breakpoints).map(key => {
+    Object.keys(breakpoints).map((key) => {
       const breakpoint = breakpoints[key];
 
       if (breakpointSmallerThan(breakpoint, originalDimensions)) {
         return generateBreakpoint(key, { file, breakpoint, originalDimensions });
       }
+
+      return undefined;
     })
   );
 };
@@ -169,7 +183,21 @@ const isSupportedImage = (...args) => {
   return isOptimizableImage(...args);
 };
 
-const isOptimizableImage = async file => {
+/**
+ *  Applies a simple image transformation to see if the image is faulty/corrupted.
+ */
+const isFaultyImage = (file) =>
+  new Promise((resolve) => {
+    file
+      .getStream()
+      .pipe(sharp().rotate())
+      .on('error', () => resolve(true))
+      .pipe(writableDiscardStream())
+      .on('error', () => resolve(true))
+      .on('close', () => resolve(false));
+  });
+
+const isOptimizableImage = async (file) => {
   let format;
   try {
     const metadata = await getMetadata(file);
@@ -181,7 +209,19 @@ const isOptimizableImage = async file => {
   return format && FORMATS_TO_OPTIMIZE.includes(format);
 };
 
-const isImage = async file => {
+const isResizableImage = async (file) => {
+  let format;
+  try {
+    const metadata = await getMetadata(file);
+    format = metadata.format;
+  } catch (e) {
+    // throw when the file is not a supported image
+    return false;
+  }
+  return format && FORMATS_TO_RESIZE.includes(format);
+};
+
+const isImage = async (file) => {
   let format;
   try {
     const metadata = await getMetadata(file);
@@ -195,7 +235,9 @@ const isImage = async file => {
 
 module.exports = () => ({
   isSupportedImage,
+  isFaultyImage,
   isOptimizableImage,
+  isResizableImage,
   isImage,
   getDimensions,
   generateResponsiveFormats,

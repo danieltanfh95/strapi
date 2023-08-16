@@ -77,10 +77,11 @@ module.exports = (config, { strapi }) => {
         }),
         config: { auth: false },
       },
+      // All other public GET-routes except /uploads/(.*) which is handled in upload middleware
       {
         method: 'GET',
-        path: '/(.*)',
-        handler: koaStatic(strapi.dirs.public, {
+        path: '/((?!uploads/).+)',
+        handler: koaStatic(strapi.dirs.static.public, {
           maxage: maxAge,
           defer: true,
         }),

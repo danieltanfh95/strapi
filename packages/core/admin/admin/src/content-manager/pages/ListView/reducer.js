@@ -5,12 +5,13 @@
 
 import produce from 'immer';
 import get from 'lodash/get';
+
 import {
   GET_DATA,
   GET_DATA_SUCCEEDED,
-  RESET_PROPS,
   ON_CHANGE_LIST_HEADERS,
   ON_RESET_LIST_HEADERS,
+  RESET_PROPS,
   SET_LIST_LAYOUT,
 } from './constants';
 
@@ -28,7 +29,7 @@ export const initialState = {
 
 const listViewReducer = (state = initialState, action) =>
   // eslint-disable-next-line consistent-return
-  produce(state, draftState => {
+  produce(state, (draftState) => {
     switch (action.type) {
       case GET_DATA: {
         return {
@@ -105,7 +106,7 @@ const listViewReducer = (state = initialState, action) =>
           }
         } else {
           draftState.displayedHeaders = state.displayedHeaders.filter(
-            header => header.name !== name
+            (header) => header.name !== name
           );
         }
 

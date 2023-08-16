@@ -1,14 +1,13 @@
 import React from 'react';
-import { useGuidedTour, useTracking, LinkButton } from '@strapi/helper-plugin';
+
+import { Box, Button, Flex, Typography } from '@strapi/design-system';
+import { LinkButton, useGuidedTour, useTracking } from '@strapi/helper-plugin';
+import { ArrowRight } from '@strapi/icons';
 import { useIntl } from 'react-intl';
-import { Stack } from '@strapi/design-system/Stack';
-import { Flex } from '@strapi/design-system/Flex';
-import { Box } from '@strapi/design-system/Box';
-import { Typography } from '@strapi/design-system/Typography';
-import { Button } from '@strapi/design-system/Button';
-import ArrowRight from '@strapi/icons/ArrowRight';
-import StepperHomepage from './components/Stepper';
+
 import layout from '../layout';
+
+import StepperHomepage from './components/Stepper';
 
 const GuidedTourHomepage = () => {
   const { guidedTourState, setSkipped } = useGuidedTour();
@@ -29,12 +28,12 @@ const GuidedTourHomepage = () => {
     ),
   }));
 
-  const enrichedSections = sections.map(section => ({
+  const enrichedSections = sections.map((section) => ({
     isDone: Object.entries(guidedTourState[section.key]).every(([, value]) => value),
     ...section,
   }));
 
-  const activeSection = enrichedSections.find(section => !section.isDone)?.key;
+  const activeSection = enrichedSections.find((section) => !section.isDone)?.key;
 
   const handleSkip = () => {
     setSkipped(true);
@@ -51,7 +50,7 @@ const GuidedTourHomepage = () => {
       paddingBottom={4}
       background="neutral0"
     >
-      <Stack spacing={6}>
+      <Flex direction="column" alignItems="stretch" gap={6}>
         <Typography variant="beta" as="h2">
           {formatMessage({
             id: 'app.components.GuidedTour.title',
@@ -59,7 +58,7 @@ const GuidedTourHomepage = () => {
           })}
         </Typography>
         <StepperHomepage sections={sections} currentSectionKey={activeSection} />
-      </Stack>
+      </Flex>
       <Flex justifyContent="flex-end">
         <Button variant="tertiary" onClick={handleSkip}>
           {formatMessage({ id: 'app.components.GuidedTour.skip', defaultMessage: 'Skip the tour' })}

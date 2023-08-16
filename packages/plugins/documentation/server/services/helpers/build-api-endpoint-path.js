@@ -15,12 +15,12 @@ const { hasFindMethod, isLocalizedPath } = require('./utils/routes');
  * @param {string} routePath - The route's path property
  * @returns {string}
  */
-const parsePathWithVariables = routePath => {
+const parsePathWithVariables = (routePath) => {
   return pathToRegexp
     .parse(routePath)
-    .map(token => {
+    .map((token) => {
       if (_.isObject(token)) {
-        return token.prefix + '{' + token.name + '}';
+        return `${token.prefix}{${token.name}}`;
       }
 
       return token;
@@ -35,18 +35,18 @@ const parsePathWithVariables = routePath => {
  *
  * @returns {object } Swagger path params object
  */
-const getPathParams = routePath => {
+const getPathParams = (routePath) => {
   return pathToRegexp
     .parse(routePath)
-    .filter(token => _.isObject(token))
-    .map(param => {
+    .filter((token) => _.isObject(token))
+    .map((param) => {
       return {
         name: param.name,
         in: 'path',
         description: '',
         deprecated: false,
         required: true,
-        schema: { type: 'string' },
+        schema: { type: 'number' },
       };
     });
 };
@@ -81,9 +81,9 @@ const getPathWithPrefix = (prefix, route) => {
  *
  * @returns {object}
  */
-const getPaths = ({ routeInfo, uniqueName, contentTypeInfo }) => {
+const getPaths = ({ routeInfo, uniqueName, contentTypeInfo, kind }) => {
   // Get the routes for the current content type
-  const contentTypeRoutes = routeInfo.routes.filter(route => {
+  const contentTypeRoutes = routeInfo.routes.filter((route) => {
     return (
       route.path.includes(contentTypeInfo.pluralName) ||
       route.path.includes(contentTypeInfo.singularName)
@@ -98,10 +98,11 @@ const getPaths = ({ routeInfo, uniqueName, contentTypeInfo }) => {
     const hasPathParams = route.path.includes('/:');
     const pathWithPrefix = getPathWithPrefix(routeInfo.prefix, route);
     const routePath = hasPathParams ? parsePathWithVariables(pathWithPrefix) : pathWithPrefix;
+
     const { responses } = getApiResponses({
       uniqueName,
       route,
-      isListOfEntities,
+      isListOfEntities: kind !== 'singleType' && isListOfEntities,
       isLocalizationPath,
     });
 
@@ -152,7 +153,7 @@ const getPaths = ({ routeInfo, uniqueName, contentTypeInfo }) => {
  *
  * @returns {object} Open API paths
  */
-const getAllPathsForContentType = apiInfo => {
+const getAllPathsForContentType = (apiInfo) => {
   let paths = {};
 
   const pathsObject = getPaths(apiInfo);
@@ -175,7 +176,7 @@ const getAllPathsForContentType = apiInfo => {
  *
  * @returns {object}
  */
-const buildApiEndpointPath = api => {
+const buildApiEndpointPath = (api) => {
   // A reusable loop for building paths and component schemas
   // Uses the api param to build a new set of params for each content type
   // Passes these new params to the function provided
